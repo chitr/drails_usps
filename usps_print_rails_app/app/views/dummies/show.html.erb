@@ -1,0 +1,16 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>First name:</b>
+  <%= @dummy.first_name %>
+</p>
+
+<p>
+  <b>Last name:</b>
+  <%= @dummy.last_name %>
+</p>
+
+
+<%= link_to 'USPS', login_path(:id => @dummy.id) %> |
+<%= link_to 'Edit', edit_dummy_path(@dummy) %> |
+<%= link_to 'Back', dummies_path %>
