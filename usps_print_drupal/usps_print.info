@@ -1,5 +1,0 @@
-; $Id: usps_print.info,v 1 2012/11/03 12:46:00 joemerante Exp $
-name = USPS Print Label
-description = Export order info using hook_order upon status change to completed sale
-package = Custom
-core = 6.x
