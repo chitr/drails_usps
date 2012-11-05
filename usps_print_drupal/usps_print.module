@@ -1,0 +1,87 @@
+<?php
+// $Id$
+
+/**
+* @file
+* Module to hold my customizations to Ubercart
+*/
+
+/**
+* Every time an action occurs to an order, hook_order() gets invoked to let your modules know what's happening and make stuff happen.
+*/
+
+function usps_print_order($op, &$arg1, $arg2) {
+// check for krumo and use in development to see returned info from hook
+// @include_once './'. drupal_get_path('module', 'devel') .'/krumo/class.krumo.php';
+// if (function_exists('krumo') && php_sapi_name() != 'cli') { }
+// krumo ($arg1);     
+  
+  // ubercart hook to get back order data while viewing administration pages
+  if ($arg1->order_status == "pending" && (strpos($_GET['q'], "admin/store/orders/") !== false) ) { 
+  	
+  	// create array to store the order data
+  	$order_data = array();
+
+  	// since hook_order is called every time the order is touched (lots of times on a page), add each data point only once
+		foreach ($arg1 as $k => $v) {
+		  if (array_key_exists($k, $order_data)) {
+			// do nothing
+			} 
+		  else {
+		    $order_data[$k] = $v;  
+			}
+		}
+
+	// make the array available in javascript as an array called usps_print
+	drupal_add_js(array('usps_print' => $order_data), 'setting');
+
+
+	drupal_add_js('
+	$(document).ready(function() {
+
+		// create new array containing just the items we want from the usps_print array
+		var order_data = new Array( 
+				Drupal.settings.usps_print.order_id[0],
+				Drupal.settings.usps_print.uid[0],
+				Drupal.settings.usps_print.product_count[0],
+				Drupal.settings.usps_print.primary_email[0],
+				Drupal.settings.usps_print.delivery_first_name[0],
+				Drupal.settings.usps_print.delivery_last_name[0],
+				Drupal.settings.usps_print.delivery_phone[0],
+				Drupal.settings.usps_print.delivery_company[0],
+				Drupal.settings.usps_print.delivery_street1[0],
+				Drupal.settings.usps_print.delivery_street2[0],
+				Drupal.settings.usps_print.delivery_city[0],
+				Drupal.settings.usps_print.delivery_zone[0],
+				Drupal.settings.usps_print.delivery_postal_code[0],
+				Drupal.settings.usps_print.delivery_country[0]
+					// TO DO add the calculated weights
+				)
+			
+			// generate a button on the front end only once, since hook_order gets called multiple times on the page
+			if ($("#usps_button").length === 0) {
+			$("#order-pane-ship_to")
+				.after("<button type=\'button\' id=\'usps_button\'>Generate USPS Label</button>");
+			
+			// click the button we created and send url params that will prepopulate the form on usps.com
+			$("#usps_button").click(function () {
+				window.open("https://cns.usps.com/go/Secure/LabelInformationAction!input.action?form.deliveryFirstName="
+					+ order_data[4]
+					+ "&form.deliveryLastName=" + order_data[5]
+					+ "&form.deliveryCompanyName=" + order_data[7]
+					+ "&form.deliveryAddressOne=" + order_data[8]
+					+ "&form.deliveryAddressTwo=" + order_data[9]
+					+ "&form.deliveryCity=" + order_data[10]
+					+ "&form.deliveryZipcode=" + order_data[12]
+					+ "&__checkbox_form.saveDeliveryAddress" + true
+				);
+
+				return false;
+				 
+				});
+			}
+		});
+	', 'inline');
+  }
+ }
+?>
