@@ -1,2 +1,6 @@
 *.DS_STORE
 scratch.txt
+
+# Ignore all logfiles and tempfiles.
+/log/*.log
+/tmp
